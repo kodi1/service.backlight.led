@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+    <!-- General -->
+    <category label="30300">
+      <setting label="30301" type="slider"    id="width" default="36" range="10,2,100" option="int"/>
+      <setting label="30302" type="slider"    id="height" default="24" range="10,2,100" option="int"/>
+      <setting label="30303" type="slider"    id="rate" default="20" range="15,5,25" option="float"/>
+      <setting label="30304" type="labelenum" id="speed" default="500000" values="115200|250000|500000"/>
+      <setting label="30305" type="slider"    id="timeout" default="1" range="1,1,10" option="int"/>
+      <setting label="30306" type="bool"      id="dbg" default="false"/>
+      <setting label="30307" type="slider"    id="dbgcnt" default="300" range="25,5,3000" option="int"/>
+    </category>
+    <category label="30400">
+      <setting label="30401" type="slider"    id="rpix" default="255" range="50,1,255" option="int"/>
+      <setting label="30402" type="slider"    id="gpix" default="255" range="50,1,255" option="int"/>
+      <setting label="30403" type="slider"    id="bpix" default="255" range="50,1,255" option="int"/>
+      <setting label="30404" type="slider"    id="gamma" default="1.00" range="0.1,0.05,2.0" option="float"/>
+      <setting label="30405" type="slider"    id="saturation" default="0.00" range="-1.0,0.05,1.0" option="float"/>
+      <setting label=""      type="bool"      id="firstrun" visible="false" default="true"/>
+    </category>
+</settings>

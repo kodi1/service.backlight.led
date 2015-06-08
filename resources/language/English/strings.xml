@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<strings>
+    <!-- Plugin settings strings -->
+    <string id="30300">General</string>
+    <string id="30301">LED Width</string>
+    <string id="30302">LED Height</string>
+    <string id="30303">Refresh Rate(fps)</string>
+    <string id="30304">Port Speed</string>
+    <string id="30305">Port Timeout(ms)</string>
+    <string id="30306">Enable Debug</string>
+    <string id="30307">Frames between Dbg snapshot</string>
+    <string id="30400">Image</string>
+    <string id="30401">Max R</string>
+    <string id="30402">Max G</string>
+    <string id="30403">Max B</string>
+    <string id="30404">Gamma</string>
+    <string id="30405">Saturation</string>
+</strings>
