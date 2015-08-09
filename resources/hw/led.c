@@ -5,7 +5,6 @@
  *      Author: virtual
  */
 
-//http://horrorcoding.altervista.org/arduino-development-with-eclipse-a-step-by-step-tutorial-to-the-basic-setup/
 
 #include <stdint.h>
 #include <avr/io.h>
