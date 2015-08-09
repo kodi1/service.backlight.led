@@ -431,9 +431,9 @@ int main (void) {
                 }
 
                 for (uint16_t i = 0; i < led_cnt; i++) {
-                    ring_put(&buff_spi, LED_TEST_R);
-                    ring_put(&buff_spi, LED_TEST_G);
                     ring_put(&buff_spi, LED_TEST_B);
+                    ring_put(&buff_spi, LED_TEST_G);
+                    ring_put(&buff_spi, LED_TEST_R);
                 }
 
                 // Trigger SPI and enable interrupt

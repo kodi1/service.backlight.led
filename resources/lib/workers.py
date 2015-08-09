@@ -89,9 +89,9 @@ def img_proc(q, w, h, rate, dbg_fcnt, alpha, fname, r, g, b, gamma_corr, sat):
         z1 = clamp(0, x * mtx['br'] + y * mtx['bg'] + z * mtx['bb'], 255)
 
         #gamma and white point
-        led_data.append(gamma(x1, r, gamma_corr))
-        led_data.append(gamma(y1, g, gamma_corr))
         led_data.append(gamma(z1, b, gamma_corr))
+        led_data.append(gamma(y1, g, gamma_corr))
+        led_data.append(gamma(x1, r, gamma_corr))
 
       q.put(led_data)
 
