@@ -28,7 +28,7 @@ def led_ctrl (q, speed, timeout, led_count, dbg_fcnt, fname):
   if detected['name']:
     notify(__scriptname__, 'Dev: %(name)s leds: %(cnt)s' % detected)
     if led_count != detected['cnt']:
-      notify(__scriptname__, 'Leds count mismatch %d %d' % (led_count, detected['cnt']))
+      notify(__scriptname__, 'Leds count mismatch %d != %d' % (led_count, detected['cnt']))
   else:
     # Device is not found
     notify(__scriptname__, 'Led Device is not found')

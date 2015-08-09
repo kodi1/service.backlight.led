@@ -18,8 +18,9 @@ class serialLed():
       try:
         self.__ser = Serial(s, speed, timeout=timeout)
         # Wait arduino to reboot
-        sleep(1.5)
+        sleep(3)
         self.__ser.write('00ledc\n')
+        sleep(1)
       except:
         continue
 
