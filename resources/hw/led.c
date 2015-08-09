@@ -167,6 +167,9 @@ static inline void spi_stop_tx()
 
 void enable_timeout_count (void)
 {
+    // disable ISR
+    TIMSK0 &= ~_BV(OCIE0A);
+
     OCR0A = TMR0_CNT_CORR-1 + TCNT0;
 
     // Clear interrupt flag
@@ -174,6 +177,9 @@ void enable_timeout_count (void)
 
     // enable ISR
     TIMSK0 |= _BV(OCIE0A);
+
+    // Clear timeout timer
+    time_out_sec_cnt = tmr0_compa_isr_cnt = 0;
 }
 
 void disable_timeout_count (void)
@@ -314,9 +320,6 @@ ISR(USART_RX_vect, ISR_BLOCK)
     // UCSR0A must be read before UDR0 !!!
     char ch = UDR0;
 
-    // Clear timeout timer
-    time_out_sec_cnt = 0;
-
     if (bit_is_clear(UCSR0A, FE0)) {
         // must read the data in order to clear the interrupt flag
         raw_16 = raw_16 << 8;
@@ -388,6 +391,7 @@ ISR(USART_UDRE_vect, ISR_BLOCK)
     } else {
         // Disable transmit empty ISR
         UCSR0B &= ~_BV(UDRIE0);
+        enable_timeout_count();
     }
 }
 
@@ -422,8 +426,6 @@ int main (void) {
     for (;;) {
         if (have_cmd) {
             have_cmd = 0;
-
-            enable_timeout_count();
 
             get_srt(str_rx);
             // Do echo
