@@ -20,9 +20,9 @@
 #define BAUD_PRESCALE (((F_CPU/((USART_BAUDRATE*16UL)>>1)))-1)
 
 /*
+ * D09      PB1     PCINT1  LED_IN
  * D10      PB2     SS      LED_SS
  * D11      PB3     MOSI    LED_OUT
- * D12      PB4     MISO    LED_IN
  * D13      PB5     CLK     LED_CLOCK
  */
 
@@ -43,7 +43,7 @@
 #define LED_COUNT_MAX   (LED_DATA_SIZE * 200)
 
 #define LED_TEST        "ledt"
-#define LED_TEST_CNT    (LED_DATA_SIZE * 4)
+#define LED_TEST_CNT    (4)
 #define LED_TEST_R      (0x40)
 #define LED_TEST_G      (0xf0)
 #define LED_TEST_B      (0x80)
@@ -85,7 +85,6 @@ volatile    ring_t buff_tx, buff_rx, buff_spi;
 volatile    uart_state_t uart_state;
 volatile    spi_state_t spi_state;
 volatile    uint8_t time_out_sec_cnt, tmr0_compa_isr_cnt;
-
 uint16_t    raw_16, rx_cnt, led_cnt;
 uint8_t     have_cmd;
 
@@ -196,10 +195,16 @@ void hw_setup(void)
     buff_spi.data = spi_data;
     buff_spi.size = SPI_BUFF_SIZE;
 
+    // Configure PCINT1 interrupt
+    DDRB &= ~_BV(DDB1);
+    PCMSK0 |= _BV(PCINT1);
+    PCIFR &= ~_BV(PCIF0);
+    PCICR |= _BV(PCIE0);
+
     // Set MOSI, SS and SCK output, all others input
-    spi_stop_tx();
     DDRB |= _BV(DDB3)|_BV(DDB5)|_BV(DDB2);
     DDRB &= ~_BV(DDB4);
+    spi_stop_tx();
 
     // Enable SPI, Master, set clock rate fck/16, interrupt enable
     SPSR |= _BV(SPI2X); // speed x2
@@ -238,6 +243,7 @@ void hw_setup(void)
     enable_timeout_count();
 
     // Enable interrupts
+
     sei();
 
     // Trigger SPI to try count leds
@@ -274,19 +280,12 @@ ISR(SPI_STC_vect, ISR_BLOCK)
             goto COMPLETE;
         }
     } else {
-        if (LED_COUNT_DATA != ch) {
-            // Count leds
-            ch = LED_COUNT_DATA;
-            if(led_cnt++ > LED_COUNT_MAX) {
-                led_cnt = 0;
-                put_srt("No led cnt!\n");
-                spi_state = SPI_MODE_NORMAL;
-                goto COMPLETE;
-            }
-        } else {
-            // Switch to normal operation
+        // Count leds
+        ch = LED_COUNT_DATA;
+        if(led_cnt++ > LED_COUNT_MAX) {
+            led_cnt = 0;
+            put_srt("No led cnt!\n");
             spi_state = SPI_MODE_NORMAL;
-            led_cnt /= LED_DATA_SIZE;
             goto COMPLETE;
         }
     }
@@ -296,6 +295,17 @@ ISR(SPI_STC_vect, ISR_BLOCK)
 
 COMPLETE:
     spi_stop_tx();
+}
+
+// Pin change ISR
+ISR(PCINT0_vect, ISR_BLOCK)
+{
+    if (PINB & _BV(PINB1)) {
+        PCICR &= ~_BV(PCIE0);
+        // Switch to normal operation
+        spi_state = SPI_MODE_NORMAL;
+        led_cnt /= LED_DATA_SIZE;
+    }
 }
 
 // Serial reception ISR
