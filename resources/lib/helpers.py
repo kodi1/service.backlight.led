@@ -13,6 +13,11 @@ __icon_msg__ = xbmc.translatePath( os.path.join( __cwd__, 'resources', 'led.png'
 
 from PIL import Image, ImageStat
 
+def get_start():
+  with open(xbmc.translatePath( os.path.join( __cwd__, 'resources', 'start.bmp' ) ).decode('utf-8'), 'rb') as f:
+    d = f.read();
+  return d
+
 def notify (msg1, msg2):
   xbmc.executebuiltin((u'Notification(%s,%s,%s,%s)' % (msg1, msg2, '10000', __icon_msg__)).encode('utf-8'))
 
@@ -27,25 +32,31 @@ def save_png(pix, size, fmt, name):
   img = Image.frombuffer('RGBA', size, pix, 'raw', fmt)
   img.save(os.path.join(__cwd__, 'resources', 'lib', name))
 
+def save_bmp(data):
+  with open (os.path.join(__cwd__, 'resources', 'lib', 'dbg.bmp'), 'wb') as f:
+    f.write(data)
+
 def extract_pixes(pix, w, h, alpha):
-  w1 = w-1
-  h1 = h-1
-  for x in xrange((((w*h1)+w)-1)*4, ((w*h1)-1)*4, -4):
-    pix[x+3] = alpha # modify alpha channel
-    # print '< ',x
-    yield pix[x+0], pix[x+1], pix[x+2]
-  for y in xrange((w*(h1-1))*4, (w-1)*4, -w*4):
-    # print '^ ', y
-    pix[y+3] = alpha # modify alpha channel
-    yield pix[y+0], pix[y+1], pix[y+2]
-  for x in xrange(0, w*4, 4):
-    # print '> ', x
-    pix[x+3] = alpha # modify alpha channel
-    yield pix[x], pix[x+1], pix[x+2]
-  for y in xrange((w+w1)*4, w*h1*4, w*4):
-    # print '| ', y
-    pix[y+3] = alpha # modify alpha channel
-    yield pix[y], pix[y+1], pix[y+2]
+  for y in xrange (0, h):
+    for x in xrange (0, w*4, 4):
+      t = (y * w * 4) + x
+      yield pix[t+2], pix[t+1], pix[t+0], x / 4, y
+  #for x in xrange((((w*h1)+w)-1)*4, ((w*h1)-1)*4, -4):
+    #pix[x+3] = alpha # modify alpha channel
+    ## print '< ',x
+    #yield pix[x+0], pix[x+1], pix[x+2]
+  #for y in xrange((w*(h1-1))*4, (w-1)*4, -w*4):
+    ## print '^ ', y
+    #pix[y+3] = alpha # modify alpha channel
+    #yield pix[y+0], pix[y+1], pix[y+2]
+  #for x in xrange(0, w*4, 4):
+    ## print '> ', x
+    #pix[x+3] = alpha # modify alpha channel
+    #yield pix[x], pix[x+1], pix[x+2]
+  #for y in xrange((w+w1)*4, w*h1*4, w*4):
+    ## print '| ', y
+    #pix[y+3] = alpha # modify alpha channel
+    #yield pix[y], pix[y+1], pix[y+2]
 
 def get_rgb2rgb(sat):
   corr = {}

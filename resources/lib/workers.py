@@ -16,42 +16,41 @@ def take_snapshot(cap):
       break
   return cap.getImage()
 
-def led_ctrl (q, speed, timeout, led_count, dbg_fcnt, fname):
-  import myserial
+def led_ctrl (q, dev_name, timeout, led_count, dbg_fcnt, fname):
+  import requests
   cnt = 0
   thr = threading.current_thread()
   start_time = None
+  url = 'http://%s/bmp' % dev_name
+  headers={'Content-Type': 'application/octet-stream'}
 
-  ledctrl = myserial.serialLed(speed, timeout)
-  detected = ledctrl.detected()
+  data_start = get_start();
 
-  if detected['name']:
-    notify(__scriptname__, 'Dev: %(name)s leds: %(cnt)s' % detected)
-    if led_count != detected['cnt']:
-      notify(__scriptname__, 'Leds count mismatch %d != %d' % (led_count, detected['cnt']))
+  res = requests.post(url=url, data=data_start, headers=headers)
+  if res.status_code == requests.codes.ok and res.text == 'ok !':
+    notify(__scriptname__, '%s found %s' % (dev_name, res.text,))
+    detected = True
   else:
     # Device is not found
     notify(__scriptname__, 'Led Device is not found')
+    detected = False
 
   while True:
-    ll = []
     # Get new contol data
     try:
       data = q.get(True, 3)
     except Queue.Empty:
       continue
 
-    # insert header / size / footer
-    ll = [0xaa, 0x55]
-    ll.extend(list(divmod(len(data), 256)))
-    ll.extend(data)
-    ll.extend([0x55, 0xaa])
-
-    if detected['name']:
+    if detected:
       # Send data to leds
-      ledctrl.datasend(ll)
-      # Get data from leds
-      rcv = ledctrl.datareceive()
+      try:
+        res = requests.post(url=url, data=data, headers=headers, timeout=timeout)
+      except:
+        log('Error post')
+        pass
+    else:
+      log('Skip %s not found' % dev_name)
 
     while not q.empty():
       # Flush
@@ -60,14 +59,12 @@ def led_ctrl (q, speed, timeout, led_count, dbg_fcnt, fname):
     if not (cnt % dbg_fcnt) and fname:
       if start_time:
         log ('%s %d Fps: %f ' % (thr.name, cnt, (1/((time.time() - start_time)/dbg_fcnt))))
-        savetofile(bytearray(ll), 'cmd.bin')
       start_time = time.time()
-      if detected['name']:
-        for line in rcv:
-          log(line)
+
     cnt += 1
 
 def img_proc(q, w, h, rate, dbg_fcnt, alpha, fname, r, g, b, gamma_corr, sat):
+  import StringIO
   thr = threading.current_thread()
   cap = xbmc.RenderCapture()
   cap.capture(w, h, (xbmc.CAPTURE_FLAG_CONTINUOUS | xbmc.CAPTURE_FLAG_IMMEDIATELY))
@@ -76,24 +73,27 @@ def img_proc(q, w, h, rate, dbg_fcnt, alpha, fname, r, g, b, gamma_corr, sat):
   cnt = 0
 
   while True:
-    led_data = []
-
     if xbmc.Player().isPlayingVideo():
       corr_start = time.time()
       pix = take_snapshot(cap)
 
-      for x, y, z in extract_pixes(pix, cap.getWidth(), cap.getHeight(), alpha):
+      output = StringIO.StringIO()
+      img = Image.new( 'RGB', (cap.getWidth(), cap.getHeight()), 'black')
+      pixels = img.load()
+
+      for x, y, z, w, h in extract_pixes(pix, cap.getWidth(), cap.getHeight(), alpha):
         # rgb2rgb
         x1 = clamp(0, x * mtx['rr'] + y * mtx['rg'] + z * mtx['rb'], 255)
         y1 = clamp(0, x * mtx['gr'] + y * mtx['gg'] + z * mtx['gb'], 255)
         z1 = clamp(0, x * mtx['br'] + y * mtx['bg'] + z * mtx['bb'], 255)
+        pixels[w, h] = (gamma(x1, r, gamma_corr), gamma(y1, g, gamma_corr), gamma(z1, b, gamma_corr))
 
-        #gamma and white point
-        led_data.append(gamma(z1, b, gamma_corr))
-        led_data.append(gamma(y1, g, gamma_corr))
-        led_data.append(gamma(x1, r, gamma_corr))
+      #led_data = led_data.transpose(Image.FLIP_TOP_BOTTOM)
+      img.save(output, format='bmp')
 
-      q.put(led_data)
+      q.put(output.getvalue())
+      #save_bmp(output.getvalue())
+      output.close()
 
       if not (cnt % dbg_fcnt) and fname:
         if start_time:

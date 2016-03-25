@@ -5,7 +5,7 @@
     <string id="30301">LED Width</string>
     <string id="30302">LED Height</string>
     <string id="30303">Refresh Rate(fps)</string>
-    <string id="30304">Port Speed</string>
+    <string id="30304">Host</string>
     <string id="30305">Port Timeout(ms)</string>
     <string id="30306">Enable Debug</string>
     <string id="30307">Frames between Dbg snapshot</string>

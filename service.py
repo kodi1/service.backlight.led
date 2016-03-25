@@ -47,8 +47,8 @@ if __name__ == '__main__':
   queue = Queue.LifoQueue(maxsize=5)
   led_arg = (
               queue,
-              int(__addon__.getSetting('speed')),
-              (float(__addon__.getSetting('timeout')) / 1000.0),
+              __addon__.getSetting('host'),
+              float(__addon__.getSetting('timeout')),
               (2 * int(__addon__.getSetting('width'))) + (2 * int(__addon__.getSetting('height'))),
               int(__addon__.getSetting('dbgcnt')),
               fname,
@@ -80,5 +80,6 @@ if __name__ == '__main__':
   while True:
     # Sleep/wait for abort for 3 seconds
     if monitor.waitForAbort(3):
+      print "xxxxxxxxxx"
       # Abort was requested while waiting. We should exit
       break
