@@ -23,6 +23,54 @@ __resource__ = xbmc.translatePath( os.path.join( __cwd__, 'resources', 'lib' ) )
 sys.path.insert(0, __resource__)
 from workers import *
 
+def m_start(stop_evt):
+  # start helper threads
+  if __addon__.getSetting('full') == 'true':
+    _full = True
+  else:
+    _full = False
+
+  proc_arg = (
+                int(__addon__.getSetting('width')),
+                int(__addon__.getSetting('height')),
+                int(__addon__.getSetting('w_scale')),
+                int(__addon__.getSetting('h_scale')),
+                (1.0 / float(__addon__.getSetting('rate'))),
+                int(__addon__.getSetting('dbgcnt')),
+                50,
+                fname,
+                int(__addon__.getSetting('rpix')),
+                int(__addon__.getSetting('gpix')),
+                int(__addon__.getSetting('bpix')),
+                float(__addon__.getSetting('gamma')),
+                float(__addon__.getSetting('saturation')),
+                __addon__.getSetting('host'),
+                _full,
+                stop_evt,
+              )
+  t = threading.Thread(target=img_proc, name='img_proc', args=proc_arg)
+
+  # Set threads to exit when main completed
+  t.start()
+  return t
+
+def m_stop(d, e):
+  e.set()
+  d.join()
+
+class MyMonitor(xbmc.Monitor):
+  def __init__(self, *args, **kwargs):
+    xbmc.Monitor.__init__(self)
+    self.__evt = threading.Event()
+    self.__t = m_start(self.__evt)
+
+  def __del__(self):
+    m_stop(self.__t, self.__evt)
+
+  def onSettingsChanged(self):
+    m_stop(self.__t, self.__evt)
+    self.__t = m_start(self.__evt)
+
 if __name__ == '__main__':
 
   if __addon__.getSetting('firstrun') == 'true':
@@ -42,44 +90,12 @@ if __name__ == '__main__':
   payload['ev'] = '1'
   ga().update(payload, None)
 
-  monitor = xbmc.Monitor()
-  # start helper threads
-  queue = Queue.LifoQueue(maxsize=5)
-  led_arg = (
-              queue,
-              __addon__.getSetting('host'),
-              float(__addon__.getSetting('timeout')),
-              (2 * int(__addon__.getSetting('width'))) + (2 * int(__addon__.getSetting('height'))),
-              int(__addon__.getSetting('dbgcnt')),
-              fname,
-            )
-  ctrl = threading.Thread(target=led_ctrl, name='ctrl', args=led_arg)
-
-  proc_arg = (
-                queue,
-                int(__addon__.getSetting('width')),
-                int(__addon__.getSetting('height')),
-                (1.0 / float(__addon__.getSetting('rate'))),
-                int(__addon__.getSetting('dbgcnt')),
-                50,
-                fname,
-                int(__addon__.getSetting('rpix')),
-                int(__addon__.getSetting('gpix')),
-                int(__addon__.getSetting('bpix')),
-                float(__addon__.getSetting('gamma')),
-                float(__addon__.getSetting('saturation')),
-              )
-  img_proc  = threading.Thread(target=img_proc, name='img_proc', args=proc_arg)
-
-  # Set threads to exit when main completed
-  ctrl.setDaemon(True)
-  img_proc.setDaemon(True)
-  ctrl.start()
-  img_proc.start()
+  monitor = MyMonitor()
 
   while True:
-    # Sleep/wait for abort for 3 seconds
-    if monitor.waitForAbort(3):
-      print "xxxxxxxxxx"
+    # Sleep/wait for abort for 1 seconds
+    if monitor.waitForAbort(1):
       # Abort was requested while waiting. We should exit
       break
+
+  del monitor

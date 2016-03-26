@@ -5,10 +5,12 @@
     <string id="30301">LED Width</string>
     <string id="30302">LED Height</string>
     <string id="30303">Refresh Rate(fps)</string>
-    <string id="30304">Host</string>
-    <string id="30305">Port Timeout(ms)</string>
+    <string id="30304">Hostame</string>
+    <string id="30305">Use full image</string>
     <string id="30306">Enable Debug</string>
     <string id="30307">Frames between Dbg snapshot</string>
+    <string id="30308">Scale W</string>
+    <string id="30309">Scale H</string>
     <string id="30400">Image</string>
     <string id="30401">Max R</string>
     <string id="30402">Max G</string>

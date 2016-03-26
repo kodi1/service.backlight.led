@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import os, sys, serial
+import os, sys
 import re
 import time
 
@@ -36,27 +36,30 @@ def save_bmp(data):
   with open (os.path.join(__cwd__, 'resources', 'lib', 'dbg.bmp'), 'wb') as f:
     f.write(data)
 
-def extract_pixes(pix, w, h, alpha):
-  for y in xrange (0, h):
-    for x in xrange (0, w*4, 4):
-      t = (y * w * 4) + x
-      yield pix[t+2], pix[t+1], pix[t+0], x / 4, y
-  #for x in xrange((((w*h1)+w)-1)*4, ((w*h1)-1)*4, -4):
-    #pix[x+3] = alpha # modify alpha channel
-    ## print '< ',x
-    #yield pix[x+0], pix[x+1], pix[x+2]
-  #for y in xrange((w*(h1-1))*4, (w-1)*4, -w*4):
-    ## print '^ ', y
-    #pix[y+3] = alpha # modify alpha channel
-    #yield pix[y+0], pix[y+1], pix[y+2]
-  #for x in xrange(0, w*4, 4):
-    ## print '> ', x
-    #pix[x+3] = alpha # modify alpha channel
-    #yield pix[x], pix[x+1], pix[x+2]
-  #for y in xrange((w+w1)*4, w*h1*4, w*4):
-    ## print '| ', y
-    #pix[y+3] = alpha # modify alpha channel
-    #yield pix[y], pix[y+1], pix[y+2]
+def extract_pixes(pix, w, h, alpha, full, s_w, s_h, pix_s):
+  if full:
+    for y in xrange (0, h, s_h):
+      for x in xrange (0, w * pix_s, pix_s * s_w):
+        t = (y * w * pix_s) + x
+        #log('bpp: %d x: %d y: %d t: %d' % (pix_s, x, y, t))
+        yield pix[t+2], pix[t+1], pix[t+0], x / pix_s / s_w, y / s_h
+  else:
+    for x in xrange((((w*h1)+w)-1)*4, ((w*h1)-1)*4, -4):
+      pix[x+3] = alpha # modify alpha channel
+      # print '< ',x
+      yield pix[x+0], pix[x+1], pix[x+2]
+    for y in xrange((w*(h1-1))*4, (w-1)*4, -w*4):
+      # print '^ ', y
+      pix[y+3] = alpha # modify alpha channel
+      yield pix[y+0], pix[y+1], pix[y+2]
+    for x in xrange(0, w*4, 4):
+      # print '> ', x
+      pix[x+3] = alpha # modify alpha channel
+      yield pix[x], pix[x+1], pix[x+2]
+    for y in xrange((w+w1)*4, w*h1*4, w*4):
+      # print '| ', y
+      pix[y+3] = alpha # modify alpha channel
+      #yield pix[y], pix[y+1], pix[y+2]
 
 def get_rgb2rgb(sat):
   corr = {}

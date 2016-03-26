@@ -4,11 +4,13 @@
     <category label="30300">
       <setting label="30301" type="slider"    id="width" default="32" range="2,2,100" option="int"/>
       <setting label="30302" type="slider"    id="height" default="8" range="2,2,100" option="int"/>
-      <setting label="30303" type="slider"    id="rate" default="20" range="15,5,25" option="float"/>
+      <setting label="30303" type="slider"    id="rate" default="10" range="5,1,25" option="float"/>
       <setting label="30304" type="text"      id="host" default=""/>
-      <setting label="30305" type="slider"    id="timeout" default="1" range="1,1,5" option="int"/>
+      <setting label="30305" type="bool"      id="full" default="true"/>
       <setting label="30306" type="bool"      id="dbg" default="false"/>
       <setting label="30307" type="slider"    id="dbgcnt" default="300" range="25,5,3000" option="int"/>
+      <setting label="30308" type="slider"    id="w_scale" default="2" range="1,1,4" option="int"/>
+      <setting label="30309" type="slider"    id="h_scale" default="2" range="1,1,4" option="int"/>
     </category>
     <category label="30400">
       <setting label="30401" type="slider"    id="rpix" default="255" range="50,1,255" option="int"/>
